@@ -16,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/zhenyang9261/web-hw10-liri-node-app/issues"
   },
-  "homepage": "https://github.com/zhenyang9261/web-hw10-liri-node-app#readme"
+  "homepage": "https://github.com/zhenyang9261/web-hw10-liri-node-app#readme",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "dotenv": "^8.2.0",
+    "moment": "^2.24.0"
+  }
 }
