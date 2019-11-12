@@ -8,7 +8,10 @@ var Spotify = require('node-spotify-api');
  * Function: to get concert info from BandInTown API
  */
 function concertThis(artist) {
-    var query = "https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp"
+
+    // If artist name is not entered, default to "Celion Dion"
+    var artistQuery = artist.length === 0? 'celion dion' : artist.join("+");
+    var query = "https://rest.bandsintown.com/artists/" + artistQuery + "/events?app_id=codingbootcamp"
     
     axios
       .get(query)
@@ -57,7 +60,7 @@ function spotifyThisSong(song) {
       secret: keys.spotify.secret
     });
     
-    // Default song is "This Sign" if user did not enter a song
+    // If song is not entered, default to "The Sign"
     var query = song.length === 0? "The Sign" : song.join(" ");
 
     spotifySearch
@@ -80,6 +83,49 @@ function spotifyThisSong(song) {
       .catch(function(err) {
         console.log(err);
       });
+}
+
+/*
+ * Function: to get movie info from OMDB API
+ */
+function movieThis(movie) {
+
+  // If no movie name is entered, default to "Mr. Nobody"
+  var movieQuery = movie.length === 0? 'Mr. Nobody' : movie.join('+');
+  var query = "http://www.omdbapi.com/?t=" + movieQuery + "&y=&plot=short&apikey=trilogy";
+  
+  axios
+    .get(query)
+    .then(function(response) {
+
+      //console.log(response.data);
+
+      console.log("-------------------------------");            
+      console.log("Movie Title: " + response.data.Title);
+      console.log("Release Year: " + response.data.Year);
+      console.log("IMDB Rating: " + response.data.imdbRating);
+      console.log("Rotten Tomato Rating: " + response.data.Ratings[1].Value);
+      console.log("Country: " + response.data.Country);
+      console.log("Language: " + response.data.Language);
+      console.log("Actors: " + response.data.Actors);
+      console.log("Plot: " + response.data.Plot);
+    })
+    .catch(function(error) {
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.log(error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log("Error", error.message);
+      }
+      console.log(error.config);
+    });
 }
 
 /*
@@ -110,8 +156,7 @@ switch (arg[2].toLowerCase()) {
     
     case "concert-this":
        
-        // compose query parameter and pass to the function
-        concertThis(param.join("+"));
+        concertThis(param);
         break;
 
     case "spotify-this-song":
@@ -119,8 +164,13 @@ switch (arg[2].toLowerCase()) {
         spotifyThisSong(param);
         break;
 
+    case "movie-this":
+   
+      movieThis(param);
+      break;
+
     default:
-        // User entered an invalid option
-        instruction();
-        break;
+      // User entered an invalid option
+      instruction();
+      break;
 }
