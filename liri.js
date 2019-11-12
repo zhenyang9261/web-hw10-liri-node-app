@@ -1,16 +1,29 @@
 require("dotenv").config();
 var keys = require("./keys.js");
 var axios = require("axios");
+var moment = require('moment');
 
 function concertThis(artist) {
     var query = "https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp"
-    console.log(query);
-
+    
     axios
       .get(query)
       .then(function(response) {
 
-        console.log(response.data);
+        var name, location, date;
+
+        console.log("-----------------------------------------");
+        console.log("Venue Name -- Location (City, Country) -- Date");
+        console.log("-----------------------------------------");
+
+        // Parse information from the response
+        for(var i=0; i<response.data.length; i++) {
+
+            name = response.data[i].venue.name; 
+            location = response.data[i].venue.city + ", " + response.data[i].venue.country;
+            date = moment(response.data[i].datetime).format("MM/DD/YYYY");
+            console.log(name + " -- " + location + " -- " + date);
+        }
       })
       .catch(function(error) {
         if (error.response) {
