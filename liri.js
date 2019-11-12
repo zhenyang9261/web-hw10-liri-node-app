@@ -64,7 +64,9 @@ if (arg[2] == null) {
     return;
 }
 
+// Get the artist name from argv and compose query parameter
 var param = arg.slice(3).join("+")
+
 switch (arg[2].toLowerCase()) {
     
     case "concert-this":
