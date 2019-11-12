@@ -59,13 +59,23 @@ function spotifyThisSong(song) {
     
     // Default song is "This Sign" if user did not enter a song
     var query = song.length === 0? "The Sign" : song.join(" ");
-console.log(query);
 
     spotifySearch
       .search({ type: 'track', query: query })
       .then(function(response) {
           
-        console.log(response.tracks.items[0]);
+        //console.log("-------------------------------");
+        //console.log(response);
+         
+        for(var j=0; j<response.tracks.items.length; j++) {
+
+          console.log("-------------------------------");
+          console.log("Song Name: " + query);
+          console.log("Artist(s): " + response.tracks.items[j].artists[0].name);
+          console.log("Album: " + response.tracks.items[j].album.name);
+          console.log("Preview Link: " + response.tracks.items[j].preview_url);
+        }
+        
       })
       .catch(function(err) {
         console.log(err);
