@@ -2,7 +2,11 @@ require("dotenv").config();
 var keys = require("./keys.js");
 var axios = require("axios");
 var moment = require('moment');
+var Spotify = require('node-spotify-api');
 
+/*
+ * Function: to get concert info from BandInTown API
+ */
 function concertThis(artist) {
     var query = "https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp"
     
@@ -44,6 +48,31 @@ function concertThis(artist) {
 }
 
 /*
+ * Function: to get song info from Spotify API
+ */
+function spotifyThisSong(song) {
+
+    var spotifySearch = new Spotify({
+      id: keys.spotify.id,
+      secret: keys.spotify.secret
+    });
+    
+    // Default song is "This Sign" if user did not enter a song
+    var query = song.length === 0? "The Sign" : song.join(" ");
+console.log(query);
+
+    spotifySearch
+      .search({ type: 'track', query: query })
+      .then(function(response) {
+          
+        console.log(response.tracks.items[0]);
+      })
+      .catch(function(err) {
+        console.log(err);
+      });
+}
+
+/*
  * Function: to show instructions of how to use this app. This function is called when user input is invalid
  */
 function instruction() {
@@ -64,14 +93,20 @@ if (arg[2] == null) {
     return;
 }
 
-// Get the artist name from argv and compose query parameter
-var param = arg.slice(3).join("+")
+// Get the rest of user input
+var param = arg.slice(3)
 
 switch (arg[2].toLowerCase()) {
     
     case "concert-this":
        
-        concertThis(param);
+        // compose query parameter and pass to the function
+        concertThis(param.join("+"));
+        break;
+
+    case "spotify-this-song":
+
+        spotifyThisSong(param);
         break;
 
     default:
