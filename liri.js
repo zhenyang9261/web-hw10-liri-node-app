@@ -84,17 +84,33 @@ function spotifyThisSong(song) {
       .search({ type: 'track', query: query })
       .then(function(response) {
           
-        //console.log("-------------------------------");
-        //console.log(response);
-         
-        for(var j=0; j<response.tracks.items.length; j++) {
+          var trackData = response.tracks.items;
 
-          console.log("-------------------------------");
-          console.log("Song Name: " + query);
-          console.log("Artist(s): " + response.tracks.items[j].artists[0].name);
-          console.log("Album: " + response.tracks.items[j].album.name);
-          console.log("Preview Link: " + response.tracks.items[j].preview_url);
-        }
+          // Song information not found, stop executing
+          if (trackData.length === 0) {
+            console.log("Song information not found. Please try another song.");
+            return;
+          }
+
+          // Compose the header information
+          var header = query + " song information";
+          var tracks = divider + header  + divider;
+         
+          for(var i=0; i<response.tracks.items.length; i++) {
+
+            var track = [
+              "Song Name: " + query,
+              "Artist(s): " + trackData[i].artists.map(artist => artist.name),
+              "Album: " + trackData[i].album.name,
+              "Preview Link: " + trackData[i].preview_url,
+              divider
+            ].join("\n");
+
+            tracks = tracks + track;
+          }
+
+          // Write to log file and to console
+          writeInfo(tracks);
         
       })
       .catch(function(err) {
@@ -115,29 +131,67 @@ function movieThis(movie) {
     .get(query)
     .then(function(response) {
 
-      console.log("-------------------------------");            
-      console.log("Movie Title: " + response.data.Title);
-      console.log("Release Year: " + response.data.Year);
-      console.log("IMDB Rating: " + response.data.imdbRating);
-      console.log("Rotten Tomato Rating: " + response.data.Ratings[1].Value);
-      console.log("Country: " + response.data.Country);
-      console.log("Language: " + response.data.Language);
-      console.log("Actors: " + response.data.Actors);
-      console.log("Plot: " + response.data.Plot);
-      console.log("-------------------------------");    
+      var movieData = response.data;
+
+      // Movie info not found, stop executing
+      // When movie not found, api will still return an object in the format of: { Response: 'False', Error: 'Movie not found!' }
+      if (movieData.Response === "False") {
+        console.log("Movie information not found. Please try another movie.");
+        return;
+      }
+
+      // Compose the header information
+      var header = (movie.length === 0? 'Mr. Nobody' : movie.join(" ")) + " movie information";
+      var theMovie = divider + header  + divider;
+
+      var rtRating = "Rating not found";
+      // Find Rotten Tomatos rating
+      if (movieData.Ratings) {
+        movieData.Ratings.forEach(function(rating) {
+          if (rating.Source.trim().toLowerCase() === "rotten tomatoes") {
+            rtRating = rating.Value;
+          }
+        });
+      }
+      // for (var i=0; i<movieData.Ratings.length; i++) {
+      //   if (movieData.Ratings[i].Source.trim().toLowerCase() === "rotten tomatoes") {
+      //     rtRating = movieData.Ratings[i].Value;
+      //     break;
+      //   }
+      // }
+
+      var movieDetails = [
+        "Movie Title: " + movieData.Title,
+        "Release Year: " + movieData.Year,
+        "IMDB Rating: " + movieData.imdbRating,
+        "Rotten Tomato Rating: " + rtRating,
+        "Country: " + movieData.Country,
+        "Language: " + movieData.Language,
+        "Actors: " + movieData.Actors,
+        "Plot: " + movieData.Plot,
+        divider
+      ].join("\n");
+
+      theMovie = theMovie + movieDetails;
+
+      // Write to file and console
+      writeInfo(theMovie);  
     })
     .catch(function(error) {
       if (error.response) {
         // The request was made and the server responded with a status code
         // that falls out of the range of 2xx
+        
         console.log(error.response.data);
         console.log(error.response.status);
         console.log(error.response.headers);
       } else if (error.request) {
         // The request was made but no response was received
+        
         console.log(error.request);
       } else {
         // Something happened in setting up the request that triggered an Error
+        
         console.log("Error", error.message);
       }
       console.log(error.config);
