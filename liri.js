@@ -5,6 +5,8 @@ var moment = require('moment');
 var Spotify = require('node-spotify-api');
 var fs = require("fs");
 
+var divider = "\n------------------------------------------\n";
+
 /*
  * Function: to get concert info from BandInTown API
  */
@@ -18,34 +20,33 @@ function concertThis(artist) {
       .get(query)
       .then(function(response) {
 
-        var name, location, date;
+        var responseData = response.data;
 
-        console.log("-----------------------------------------");
-        console.log("Venue Name -- Location (City, Country) -- Date");
-        console.log("-----------------------------------------");
+        // Concert info not found, stop executing
+        if (responseData.length === 0) {
+          console.log("Concert information not found. Please try another artist.");
+          return;
+        }
+
+        // Compose the header information
+        var header = (artist.length === 0? 'celion dion' : artist.join(" ")) + " concert information";
+        var concerts = divider + header  + divider;
 
         // Parse information from the response
         for(var i=0; i<response.data.length; i++) {
 
-            name = response.data[i].venue.name; 
-            location = response.data[i].venue.city + ", " + response.data[i].venue.country;
-            date = moment(response.data[i].datetime).format("MM/DD/YYYY");
-            console.log(name + " -- " + location + " -- " + date);
+          var concert = [
+            "Venue Name: " + responseData[i].venue.name,
+            "Location: " + responseData[i].venue.city + ", " + response.data[i].venue.country,
+            "Date: " + moment(response.data[i].datetime).format("MM/DD/YYYY"),
+            divider
+            ].join("\n");
+          
+          concerts = concerts + concert;
         }
 
-        fs.appendFile("log.txt", response, function(err) {
-
-          // If an error was experienced we will log it.
-          if (err) {
-            console.log(err);
-          }
-        
-          // If no error is experienced, we'll log the phrase "Content Added" to our node console.
-          else {
-            console.log("Content Added!");
-          }
-        
-        });
+        // Output to file
+        writeInfo(concerts);
 
       })
       .catch(function(error) {
@@ -164,6 +165,22 @@ function doWhatItSays() {
     param = param.split(" ")
     runApp(dataArr[0], param);
   
+  });
+}
+
+/*
+ * Function: to append the input string to log.txt file
+ */
+function writeInfo(text) {
+  fs.appendFile("log.txt", text, function(err) {
+    // If an error was experienced we will log it.
+    if (err) {
+      console.log(err);
+    }
+    // If no error, also output the string to console
+    else {
+      console.log(text);
+    }
   });
 }
 
