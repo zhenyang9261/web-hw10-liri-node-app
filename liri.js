@@ -84,17 +84,33 @@ function spotifyThisSong(song) {
       .search({ type: 'track', query: query })
       .then(function(response) {
           
-        //console.log("-------------------------------");
-        //console.log(response);
-         
-        for(var j=0; j<response.tracks.items.length; j++) {
+          var trackData = response.tracks.items;
 
-          console.log("-------------------------------");
-          console.log("Song Name: " + query);
-          console.log("Artist(s): " + response.tracks.items[j].artists[0].name);
-          console.log("Album: " + response.tracks.items[j].album.name);
-          console.log("Preview Link: " + response.tracks.items[j].preview_url);
-        }
+          // Song information not found, stop executing
+          if (trackData.length === 0) {
+            console.log("Song information not found. Please try another song.");
+            return;
+          }
+
+          // Compose the header information
+          var header = query + " song information";
+          var tracks = divider + header  + divider;
+         
+          for(var i=0; i<response.tracks.items.length; i++) {
+
+            var track = [
+              "Song Name: " + query,
+              "Artist(s): " + trackData[i].artists.map(artist => artist.name),
+              "Album: " + trackData[i].album.name,
+              "Preview Link: " + trackData[i].preview_url,
+              divider
+            ].join("\n");
+
+            tracks = tracks + track;
+          }
+
+          // Write to log file and to console
+          writeInfo(tracks);
         
       })
       .catch(function(err) {
