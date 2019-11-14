@@ -3,6 +3,9 @@ var keys = require("./keys.js");
 var axios = require("axios");
 var moment = require('moment');
 var Spotify = require('node-spotify-api');
+var fs = require("fs");
+
+var divider = "\n------------------------------------------\n";
 
 /*
  * Function: to get concert info from BandInTown API
@@ -17,20 +20,34 @@ function concertThis(artist) {
       .get(query)
       .then(function(response) {
 
-        var name, location, date;
+        var responseData = response.data;
 
-        console.log("-----------------------------------------");
-        console.log("Venue Name -- Location (City, Country) -- Date");
-        console.log("-----------------------------------------");
+        // Concert info not found, stop executing
+        if (responseData.length === 0) {
+          console.log("Concert information not found. Please try another artist.");
+          return;
+        }
+
+        // Compose the header information
+        var header = (artist.length === 0? 'celion dion' : artist.join(" ")) + " concert information";
+        var concerts = divider + header  + divider;
 
         // Parse information from the response
         for(var i=0; i<response.data.length; i++) {
 
-            name = response.data[i].venue.name; 
-            location = response.data[i].venue.city + ", " + response.data[i].venue.country;
-            date = moment(response.data[i].datetime).format("MM/DD/YYYY");
-            console.log(name + " -- " + location + " -- " + date);
+          var concert = [
+            "Venue Name: " + responseData[i].venue.name,
+            "Location: " + responseData[i].venue.city + ", " + response.data[i].venue.country,
+            "Date: " + moment(response.data[i].datetime).format("MM/DD/YYYY"),
+            divider
+            ].join("\n");
+          
+          concerts = concerts + concert;
         }
+
+        // Output to file
+        writeInfo(concerts);
+
       })
       .catch(function(error) {
         if (error.response) {
@@ -98,8 +115,6 @@ function movieThis(movie) {
     .get(query)
     .then(function(response) {
 
-      //console.log(response.data);
-
       console.log("-------------------------------");            
       console.log("Movie Title: " + response.data.Title);
       console.log("Release Year: " + response.data.Year);
@@ -109,6 +124,7 @@ function movieThis(movie) {
       console.log("Language: " + response.data.Language);
       console.log("Actors: " + response.data.Actors);
       console.log("Plot: " + response.data.Plot);
+      console.log("-------------------------------");    
     })
     .catch(function(error) {
       if (error.response) {
@@ -129,6 +145,46 @@ function movieThis(movie) {
 }
 
 /*
+ * Function: to read a line of text from random.txt and execute the api call based on this text
+ */
+function doWhatItSays() {
+
+  fs.readFile("random.txt", "utf8", function(error, data) {
+
+    // If the code experiences any errors it will log the error to the console.
+    if (error) {
+      return console.log(error);
+    }
+  
+    // Split the string by comma. First element is the option, second element is the param
+    var dataArr = data.split(",");
+
+    // The second input param of runApp should be an array. Need to peel off the beginning and ending quatation marks first,
+    // then split by space ' '.
+    var param = dataArr[1].substring(1, dataArr[1].length-1);
+    param = param.split(" ")
+    runApp(dataArr[0], param);
+  
+  });
+}
+
+/*
+ * Function: to append the input string to log.txt file
+ */
+function writeInfo(text) {
+  fs.appendFile("log.txt", text, function(err) {
+    // If an error was experienced we will log it.
+    if (err) {
+      console.log(err);
+    }
+    // If no error, also output the string to console
+    else {
+      console.log(text);
+    }
+  });
+}
+
+/*
  * Function: to show instructions of how to use this app. This function is called when user input is invalid
  */
 function instruction() {
@@ -138,6 +194,40 @@ function instruction() {
     console.log("node liri.js spotify-this-song <song name>");
     console.log("node liri.js movie-this <movie name>");
     console.log("node liri.js do-what-it-says");
+}
+
+/*
+ * Function: to call different functions based on input
+ */
+function runApp(option, param) {
+
+  switch (option) {
+    
+    case "concert-this":
+       
+      concertThis(param);
+      break;
+
+    case "spotify-this-song":
+
+      spotifyThisSong(param);
+      break;
+
+    case "movie-this":
+   
+      movieThis(param);
+      break;
+    
+    case "do-what-it-says":
+
+      doWhatItSays();
+      break;
+
+    default:
+      // User entered an invalid option
+      instruction();
+      break;
+  }
 }
 
 //------------- Main starts here -------------------------
@@ -152,25 +242,5 @@ if (arg[2] == null) {
 // Get the rest of user input
 var param = arg.slice(3)
 
-switch (arg[2].toLowerCase()) {
-    
-    case "concert-this":
-       
-        concertThis(param);
-        break;
-
-    case "spotify-this-song":
-
-        spotifyThisSong(param);
-        break;
-
-    case "movie-this":
-   
-      movieThis(param);
-      break;
-
-    default:
-      // User entered an invalid option
-      instruction();
-      break;
-}
+// Run app based on user input
+runApp(arg[2], param);
