@@ -11,7 +11,9 @@ This is a Node app that makes API calls to get information from the following si
 2. Enter the app folder, and type "npm install". This will install necessary node packages.
 3. You will need Spotify API key to run this app. Go to https://developer.spotify.com/dashboard/login to apply for a free API developer account and find the API user id and secret.
 4. In the local folder, create a file .env and put your Spotify API user id and secret in the file in the following format:
+
 SPOTIFY_ID=your-id
+
 SPOTIFY_SECRET=your-secret
 
 ## How to run this app
